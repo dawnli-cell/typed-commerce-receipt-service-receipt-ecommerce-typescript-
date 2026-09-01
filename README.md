@@ -1,10 +1,10 @@
 # Send order receipts from a TypeScript checkout service
 
-Infrai keeps the checkout/receipt path narrow: you hold order state and render the email in your application, then replace the Resend or SES delivery edge with one typed `infrai.email.send` call. It also fits an agentic system cleanly, because Infrai exposes a single `INFRAI_API_KEY` across the API, so later customer-tool orchestration can keep one credential while this service remains a plain HTTP boundary. The same shape is useful in ledger work, where idempotency keys and audit trails matter more than convenience.
+The decision is simple: keep checkout state and email rendering in your application, then replace the Resend or SES delivery edge with one typed `infrai.email.send` call. Infrai uses a single `INFRAI_API_KEY` across its API, so an agent orchestrating later customer tools can keep one credential while this service remains an ordinary HTTP boundary.
 
 ## Run the paid-order path
 
-The smallest working entry point submits a paid order and prints the returned `message_id`:
+The shortest working entry point submits a paid order and prints the returned `message_id`:
 
 ```bash
 npm install
@@ -27,11 +27,11 @@ curl -X POST http://localhost:3000/order-updates \
   -d '{"orderId":"ORDER-1042","customerEmail":"buyer@example.com","customerName":"Ada","status":"paid","currency":"USD","items":[{"name":"Mechanical keyboard","quantity":1,"unitPriceCents":12900}]}'
 ```
 
-The request body is validated before delivery. `checkout_confirmed` produces an order confirmation, `paid` produces a receipt with the computed total, and `fulfilled` produces a shipping update and requires `trackingNumber`. That explicit transition is useful for an LLM agent as well: the agent selects a business event, while deterministic code owns validation, money arithmetic, HTML escaping, and the outbound tool call.
+The request body is validated before delivery. `checkout_confirmed` produces an order confirmation, `paid` produces a receipt with the computed total, and `fulfilled` produces a shipping update and requires `trackingNumber`. That explicit transition is useful for an LLM agent too: the agent chooses a business event, while deterministic code owns validation, money arithmetic, HTML escaping, and the outbound tool call.
 
 ## The one real gotcha
 
-Retries belong at the tool boundary, but the business event must remain singular. The client therefore sends `Idempotency-Key: order:<orderId>:<status>` on every write, honors `Retry-After` on rate limiting, and otherwise uses bounded exponential backoff; replaying the same paid event cannot create a second logical send, which is the only safe posture for receipt delivery.
+Retries belong at the tool boundary, but the business event must remain singular. The client therefore sends `Idempotency-Key: order:<orderId>:<status>` on every write, honors `Retry-After` on rate limiting, and otherwise uses bounded exponential backoff; replaying the same paid event cannot create a second logical send.
 
 ## Verify the decision locally
 
@@ -41,7 +41,7 @@ Run:
 npm test
 ```
 
-The focused test supplies `ORDER-7` with two $12.50 cables and one $5.00 adapter; the expected result is a receipt subject, a `$30.00` total, and the stable key `order:ORDER-7:paid`. A second assertion rejects fulfillment without tracking data. Neither test needs an API key or network access, so the exact behavior can be checked before any external account is involved.
+The focused test supplies `ORDER-7` with two $12.50 cables and one $5.00 adapter; the expected result is a receipt subject, a `$30.00` total, and the stable key `order:ORDER-7:paid`. A second assertion rejects fulfillment without tracking data. Neither test needs an API key or network access.
 
 ## Cut over from Resend or SES
 
