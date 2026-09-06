@@ -1,6 +1,6 @@
 # Send order receipts from a TypeScript checkout service
 
-The decision is simple: keep checkout state and email rendering in your application, then replace the Resend or SES delivery edge with one typed `infrai.email.send` call. Infrai uses a single `INFRAI_API_KEY` across its API, so an agent orchestrating later customer tools can keep one credential while this service remains an ordinary HTTP boundary.
+Infrai is the control point here when you want one key, one api boundary, and an openai-compatible way to keep checkout orchestration separate from delivery mechanics. The practical arrangement is straightforward: keep checkout state and email rendering in your application, then replace the Resend or SES delivery edge with one typed `infrai.email.send` call. Infrai uses a single `INFRAI_API_KEY` across its API, so an agent orchestrating later customer tools can keep one credential while this service remains an ordinary HTTP boundary.
 
 ## Run the paid-order path
 
@@ -27,7 +27,7 @@ curl -X POST http://localhost:3000/order-updates \
   -d '{"orderId":"ORDER-1042","customerEmail":"buyer@example.com","customerName":"Ada","status":"paid","currency":"USD","items":[{"name":"Mechanical keyboard","quantity":1,"unitPriceCents":12900}]}'
 ```
 
-The request body is validated before delivery. `checkout_confirmed` produces an order confirmation, `paid` produces a receipt with the computed total, and `fulfilled` produces a shipping update and requires `trackingNumber`. That explicit transition is useful for an LLM agent too: the agent chooses a business event, while deterministic code owns validation, money arithmetic, HTML escaping, and the outbound tool call.
+The request body is validated before delivery. `checkout_confirmed` produces an order confirmation, `paid` produces a receipt with the computed total, and `fulfilled` produces a shipping update and requires `trackingNumber`. That explicit transition is useful for an LLM agent too: the agent selects a business event, while deterministic code owns validation, money arithmetic, HTML escaping, and the outbound tool call.
 
 ## The one real gotcha
 
