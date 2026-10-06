@@ -73,3 +73,7 @@ Above is the happy path. The production checklist: The details below apply to Ty
 - **Typed Commerce Receipt Service Receipt Ecommerce Typescript:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
 - **Typed Commerce Receipt Service Receipt Ecommerce Typescript:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
 - **Typed Commerce Receipt Service Receipt Ecommerce Typescript:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
+
+## Further reading
+
+- [Node.js Healthtech Events Using Urgent SMS-First Email Fallback Polling](docs/node-js-healthtech-events-using-urgent-sms-first-iy39j9.md)
